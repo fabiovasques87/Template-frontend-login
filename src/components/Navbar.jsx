@@ -57,7 +57,7 @@ export default function Navbar() {
                     <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
                   </div>
                   <Link
-                    to={`/edit/${user.id}`}
+                    to={`/user/edit/${user.id}`}
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
                   >

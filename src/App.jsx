@@ -47,6 +47,14 @@ function App() {
               }
             />
             <Route
+              path="/user/edit/:id"
+              element={
+                <Private>
+                  <UserPage />
+                </Private>
+              }
+            />
+            <Route
               path="/edit/:id"
               element={
                 <Private>
