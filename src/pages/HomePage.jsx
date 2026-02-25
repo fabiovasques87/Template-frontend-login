@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from 'react';
 import { getItems, deleteItem, getActivities } from '../services/itemService';
 import { Link } from 'react-router-dom';
-import { Edit2, Trash2, Package, History, Plus, User as UserIcon } from 'lucide-react';
+import { Edit2, Trash2, Package, History, Plus, User as UserIcon, Search } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthContext';
 
 export default function HomePage() {
@@ -9,6 +9,7 @@ export default function HomePage() {
     const [items, setItems] = useState([]);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadData();
@@ -74,9 +75,21 @@ export default function HomePage() {
                 {/* Items Table Section */}
                 <div className="lg:col-span-2">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-indigo-600" />
-                            <h2 className="font-semibold text-gray-800">Itens Cadastrados</h2>
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                                <Package className="w-5 h-5 text-indigo-600" />
+                                <h2 className="font-semibold text-gray-800">Itens Cadastrados</h2>
+                            </div>
+                            <div className="relative">
+                                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por servidor ou patrimônio..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-9 pr-4 py-1.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition w-full sm:w-64"
+                                />
+                            </div>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
@@ -91,12 +104,25 @@ export default function HomePage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
-                                    {items.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="6" className="px-6 py-10 text-center text-gray-400">Nenhum item cadastrado.</td>
-                                        </tr>
-                                    ) : (
-                                        items.map(item => (
+                                    {(() => {
+                                        const filteredItems = items.filter(item => {
+                                            const search = searchTerm.toLowerCase();
+                                            return (
+                                                item.servidor?.toLowerCase().includes(search) ||
+                                                item.patrimonio?.toLowerCase().includes(search) ||
+                                                item.item?.toLowerCase().includes(search)
+                                            );
+                                        });
+
+                                        if (filteredItems.length === 0) {
+                                            return (
+                                                <tr>
+                                                    <td colSpan="6" className="px-6 py-10 text-center text-gray-400">Nenhum item encontrado.</td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return filteredItems.map(item => (
                                             <tr key={item.id} className="hover:bg-gray-50/50 transition duration-150">
                                                 <td className="px-6 py-4">
                                                     <span className="font-medium text-gray-900 block">{item.item}</span>
@@ -136,7 +162,7 @@ export default function HomePage() {
                                                 </td>
                                             </tr>
                                         ))
-                                    )}
+                                    })()}
                                 </tbody>
                             </table>
                         </div>
