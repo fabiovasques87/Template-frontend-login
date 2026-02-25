@@ -1,157 +1,195 @@
 import { useEffect, useState, useContext } from 'react';
-import { getUsers, deleteUser } from '../services/userService';
+import { getItems, deleteItem, getActivities } from '../services/itemService';
 import { Link } from 'react-router-dom';
-import { Edit2, Trash2, User as UserIcon } from 'lucide-react';
+import { Edit2, Trash2, Package, History, Plus, User as UserIcon } from 'lucide-react';
 import { AuthContext } from '../contexts/AuthContext';
 
 export default function HomePage() {
     const { user: currentUser } = useContext(AuthContext);
-    const [users, setUsers] = useState([]);
+    const [items, setItems] = useState([]);
+    const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadUsers();
+        loadData();
     }, []);
 
-    const loadUsers = async () => {
+    const loadData = async () => {
         setLoading(true);
         try {
-            const data = await getUsers();
-            // Filter to show only the logged in user
-            const filteredData = data.filter(u => u.id === currentUser?.id);
-            setUsers(filteredData);
+            const [itemsData, activitiesData] = await Promise.all([
+                getItems(),
+                getActivities()
+            ]);
+            setItems(itemsData);
+            setActivities(activitiesData);
         } catch (error) {
-            console.error('Failed to load users', error);
-            alert('Erro ao carregar usuários');
+            console.error('Failed to load data', error);
+            alert('Erro ao carregar dados');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        if (confirm('Tem certeza que deseja excluir este item?')) {
             try {
-                await deleteUser(id);
-                setUsers(users.filter(user => user.id !== id));
+                await deleteItem(id);
+                loadData(); // Reload to update both items and activities
             } catch (error) {
-                console.error('Failed to delete user', error);
-                alert('Erro ao deletar usuário');
+                console.error('Failed to delete item', error);
+                alert('Erro ao deletar item');
             }
         }
     };
 
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('pt-BR');
+    };
+
+    const formatDateTime = (dateString) => {
+        return new Date(dateString).toLocaleString('pt-BR');
+    };
+
     if (loading) {
-        return <div className="text-center py-10 text-gray-500">Carregando...</div>;
+        return <div className="flex justify-center items-center py-20 text-gray-500">
+            <div className="animate-spin mr-2"><Package className="w-6 h-6" /></div>
+            Carregando dashboard...
+        </div>;
     }
 
     return (
-        <div>
-
-
-            {/* 
-            <h1 className="text-2xl font-bold mb-6 text-gray-800">Lista de Usuários</h1>
-
-            {users.length === 0 ? (
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center text-gray-500">
-                    Nenhum usuário encontrado.
+        <div className="space-y-8">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Controle de Materiais</h1>
+                    <p className="text-gray-500 text-sm">Gerencie os itens e acompanhe as movimentações.</p>
                 </div>
-            ) : (
-                <>
-                    <div className="hidden sm:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <Link to="/new" className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
+                    <Plus className="w-4 h-4" /> Novo Item
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Items Table Section */}
+                <div className="lg:col-span-2">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                            <Package className="w-5 h-5 text-indigo-600" />
+                            <h2 className="font-semibold text-gray-800">Itens Cadastrados</h2>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
+                                <thead className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
                                     <tr>
-                                        <th className="px-6 py-4">ID</th>
-                                        <th className="px-6 py-4">Nome</th>
-                                        <th className="px-6 py-4">Email</th>
+                                        <th className="px-6 py-4">Item</th>
+                                        <th className="px-6 py-4">Data</th>
+                                        <th className="px-6 py-4">Origem/Destino</th>
+                                        <th className="px-6 py-4">Servidor</th>
+                                        <th className="px-6 py-4">Patrimônio</th>
                                         <th className="px-6 py-4 text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
-                                    {users.map(user => (
-                                        <tr key={user.id} className="hover:bg-gray-50/50 transition duration-150">
-                                            <td className="px-6 py-4 text-gray-500 text-sm font-mono">#{user.id}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="bg-indigo-50 text-indigo-600 p-2 rounded-full">
-                                                        <UserIcon className="w-4 h-4" />
-                                                    </div>
-                                                    <span className="font-medium text-gray-900">{user.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-600">{user.email}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <Link
-                                                        to={`/edit/${user.id}`}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                                        title="Editar"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(user.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                                                        title="Excluir"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                    {items.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="px-6 py-10 text-center text-gray-400">Nenhum item cadastrado.</td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        items.map(item => (
+                                            <tr key={item.id} className="hover:bg-gray-50/50 transition duration-150">
+                                                <td className="px-6 py-4">
+                                                    <span className="font-medium text-gray-900 block">{item.item}</span>
+                                                    <span className="text-[10px] text-gray-400 uppercase">#{item.id}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-600">{formatDate(item.data)}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm">
+                                                        <span className="text-gray-400">De:</span> {item.origem}
+                                                    </div>
+                                                    <div className="text-sm">
+                                                        <span className="text-gray-400">Para:</span> {item.destino}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
+                                                            <UserIcon className="w-3 h-3 text-gray-500" />
+                                                        </div>
+                                                        <span className="text-sm text-gray-700">{item.servidor}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-sm font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100 text-gray-600">
+                                                        {item.patrimonio || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Link to={`/edit/${item.id}`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Editar">
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Link>
+                                                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="Excluir">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:hidden">
-                        {users.map(user => (
-                            <div key={user.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-indigo-50 text-indigo-600 p-2 rounded-full">
-                                            <UserIcon className="w-5 h-5" />
+                {/* Activity Log Section */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                            <History className="w-5 h-5 text-amber-500" />
+                            <h2 className="font-semibold text-gray-800">Movimentação</h2>
+                        </div>
+                        <div className="flex-1 overflow-y-auto max-h-[600px] p-4">
+                            {activities.length === 0 ? (
+                                <p className="text-center text-gray-400 py-10">Nenhuma atividade registrada.</p>
+                            ) : (
+                                <div className="space-y-4">
+                                    {activities.map(activity => (
+                                        <div key={activity.id} className="border-l-2 border-indigo-100 pl-4 py-1 relative">
+                                            <div className="absolute -left-[5px] top-2 w-2 h-2 rounded-full bg-indigo-400"></div>
+                                            <p className="text-sm text-gray-900 font-medium">
+                                                {activity.user?.name || 'Usuário'} <span className="font-normal text-gray-500">realizou:</span>
+                                            </p>
+                                            <div className="mt-1">
+                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${activity.action === 'CREATE' ? 'bg-green-100 text-green-700' :
+                                                    activity.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                    {activity.action === 'CREATE' ? 'Cadastro' :
+                                                        activity.action === 'UPDATE' ? 'Edição' : 'Exclusão'}
+                                                </span>
+                                                <span className="ml-2 text-xs text-gray-600 italic">
+                                                    {(() => {
+                                                        try {
+                                                            const details = JSON.parse(activity.details);
+                                                            const name = details.itemName || 'Item';
+                                                            const id = details.itemId || '?';
+                                                            return `${name} (ID: ${id})`;
+                                                        } catch {
+                                                            return 'Item';
+                                                        }
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 mt-1">{formatDateTime(activity.createdAt)}</p>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">{user.name}</h3>
-                                            <p className="text-xs text-gray-500 font-mono">#{user.id}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <Link
-                                            to={`/edit/${user.id}`}
-                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                        >
-                                            <Edit2 className="w-5 h-5" />
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDelete(user.id)}
-                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </button>
-                                    </div>
+                                    ))}
                                 </div>
-                                <div className="border-t border-gray-50 pt-3">
-                                    <p className="text-sm text-gray-600">
-                                        <span className="text-xs uppercase text-gray-400 font-semibold block mb-0.5">Email</span>
-                                        {user.email}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
+                            )}
+                        </div>
                     </div>
-                </>
-            )}
-            */}
-            <div className="text-center py-20 text-gray-500">
-                <p>Bem-vindo ao sistema!</p>
-                <p className="text-sm mt-2">Utilize as opções no menu superior para navegar.</p>
+                </div>
             </div>
-
-
         </div>
     );
 }

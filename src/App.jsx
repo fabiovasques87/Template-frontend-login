@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import ItemPage from './pages/ItemPage';
 import UserPage from './pages/UserPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -41,7 +42,7 @@ function App() {
               path="/new"
               element={
                 <Private>
-                  <UserPage />
+                  <ItemPage />
                 </Private>
               }
             />
@@ -49,7 +50,7 @@ function App() {
               path="/edit/:id"
               element={
                 <Private>
-                  <UserPage />
+                  <ItemPage />
                 </Private>
               }
             />
