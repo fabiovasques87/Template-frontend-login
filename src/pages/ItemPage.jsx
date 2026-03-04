@@ -57,7 +57,8 @@ export default function ItemPage() {
             navigate('/');
         } catch (error) {
             console.error('Failed to save item', error);
-            alert('Erro ao salvar item');
+            const message = error.response?.data?.error || 'Erro ao salvar item';
+            alert(message);
         } finally {
             setLoading(false);
         }

@@ -16,6 +16,7 @@ export default function HomePage() {
         loadData();
     }, []);
 
+
     const loadData = async () => {
         setLoading(true);
         try {
@@ -32,6 +33,8 @@ export default function HomePage() {
             setLoading(false);
         }
     };
+
+
 
     const handleDelete = async (id) => {
         if (confirm('Tem certeza que deseja excluir este item?')) {
