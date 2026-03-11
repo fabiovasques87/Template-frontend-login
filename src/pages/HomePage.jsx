@@ -275,7 +275,7 @@ export default function HomePage() {
                             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60] transition-opacity"
                             onClick={() => setIsLogOpen(false)}
                         ></div>
-                        <div className="fixed right-0 top-0 h-full w-full sm:w-80 bg-white shadow-2xl z-[70] border-l border-gray-100 flex flex-col animate-in slide-in-from-right duration-300">
+                        <div className="fixed right-0 top-0 h-full w-full sm:w-[28rem] bg-white shadow-2xl z-[70] border-l border-gray-100 flex flex-col animate-in slide-in-from-right duration-300">
                             <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <History className="w-5 h-5 text-amber-500" />
@@ -306,14 +306,37 @@ export default function HomePage() {
                                                         {activity.action === 'CREATE' ? 'Cadastro' :
                                                             activity.action === 'UPDATE' ? 'Edição' : 'Exclusão'}
                                                     </span>
-                                                    <span className="text-xs text-gray-600 italic truncate max-w-[150px]">
+                                                    <span className="text-xs text-gray-600 italic max-w-[24rem]">
                                                         {(() => {
                                                             try {
                                                                 const details = JSON.parse(activity.details);
-                                                                const name = details.itemName || 'Item';
                                                                 const id = details.itemId || '?';
-                                                                return `${name} (ID: ${id})`;
-                                                            } catch {
+
+                                                                if (activity.action === 'UPDATE') {
+                                                                    if (details.changes && Object.keys(details.changes).length > 0) {
+                                                                        // listar mudanças resumidas com nome do item
+                                                                        const itemName = details.itemName || 'Item';
+                                                                        const servidor = details.servidor || 'Servidor';
+                                                                        const parts = Object.entries(details.changes).map(([k,v]) => {
+                                                                            const before = v.before instanceof Date ? new Date(v.before).toLocaleDateString('pt-BR') : v.before;
+                                                                            const after = v.after instanceof Date ? new Date(v.after).toLocaleDateString('pt-BR') : v.after;
+                                                                            return `${k}: ${before}→${after}`;
+                                                                        });
+                                                                        return `${itemName} (${servidor}) - ${parts.join(', ')} (ID: ${id})`;
+                                                                    } else {
+                                                                        return `Alteração em item (ID: ${id})`;
+                                                                    }
+                                                                }
+                                                                if (activity.action === 'CREATE' && details.newValues) {
+                                                                    return `${details.newValues.item || 'Item'} cadastrado (ID: ${id})`;
+                                                                }
+                                                                if (activity.action === 'DELETE' && details.deletedValues) {
+                                                                    return `${details.deletedValues.item || 'Item'} excluído (ID: ${id})`;
+                                                                }
+                                                                // fallback genérico
+                                                                return `ID: ${id}`;
+                                                            } catch (e) {
+                                                                console.error('Erro ao parsear atividade:', e);
                                                                 return 'Item';
                                                             }
                                                         })()}
