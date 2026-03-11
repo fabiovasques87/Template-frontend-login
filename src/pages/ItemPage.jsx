@@ -15,7 +15,8 @@ export default function ItemPage() {
         origem: '',
         destino: '',
         servidor: '',
-        patrimonio: ''
+        patrimonio: '',
+        status: 'DEVOLVIDO'
     });
 
     useEffect(() => {
@@ -34,7 +35,8 @@ export default function ItemPage() {
                 origem: item.origem,
                 destino: item.destino,
                 servidor: item.servidor,
-                patrimonio: item.patrimonio || ''
+                patrimonio: item.patrimonio || '',
+                status: item.status || 'DEVOLVIDO'
             });
         } catch (error) {
             console.error('Failed to load item', error);
@@ -181,6 +183,23 @@ export default function ItemPage() {
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-base"
                                 placeholder="Setor de destino"
                             />
+                        </div>
+
+                        <div className="md:col-span-1">
+                            <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-1">
+                                Status
+                            </label>
+                            <select
+                                id="status"
+                                name="status"
+                                value={formData.status}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-base bg-white"
+                            >
+                                <option value="DEVOLVIDO">Devolvido</option>
+                                <option value="EMPRESTADO">Emprestado</option>
+                            </select>
                         </div>
                     </div>
 

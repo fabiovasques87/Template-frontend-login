@@ -68,7 +68,7 @@ export default function HomePage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Controle de Materiais</h1>
@@ -119,6 +119,7 @@ export default function HomePage() {
                                         <th className="px-6 py-4">Origem/Destino</th>
                                         <th className="px-6 py-4">Servidor</th>
                                         <th className="px-6 py-4">Patrimônio</th>
+                                        <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4 text-right">Ações</th>
                                     </tr>
                                 </thead>
@@ -167,6 +168,15 @@ export default function HomePage() {
                                                 <td className="px-6 py-4">
                                                     <span className="text-sm font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100 text-gray-600">
                                                         {item.patrimonio || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full inline-block ${
+                                                        item.status === 'EMPRESTADO' 
+                                                            ? 'bg-orange-100 text-orange-700' 
+                                                            : 'bg-green-100 text-green-700'
+                                                    }`}>
+                                                        {item.status === 'EMPRESTADO' ? 'Emprestado' : 'Devolvido'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
@@ -239,6 +249,16 @@ export default function HomePage() {
                                             <div className="bg-gray-50/50 p-2 rounded-lg border border-gray-100">
                                                 <span className="text-[10px] text-gray-400 uppercase block mb-1">Patrimônio</span>
                                                 <span className="text-xs font-mono font-bold text-gray-600 block">{item.patrimonio || '-'}</span>
+                                            </div>
+                                            <div className="bg-gray-50/50 p-2 rounded-lg border border-gray-100 col-span-2">
+                                                <span className="text-[10px] text-gray-400 uppercase block mb-1">Status</span>
+                                                <span className={`text-xs font-bold px-2 py-1 rounded-full inline-block ${
+                                                    item.status === 'EMPRESTADO' 
+                                                        ? 'bg-orange-100 text-orange-700' 
+                                                        : 'bg-green-100 text-green-700'
+                                                }`}>
+                                                    {item.status === 'EMPRESTADO' ? 'Emprestado' : 'Devolvido'}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
